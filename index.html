@@ -992,18 +992,29 @@ function limparDados() {
 // ============================
 // GOOGLE SHEETS (opcional)
 // ============================
-async function enviarParaSheets(tipo, dado) {
+function enviarParaSheets(tipo, dado) {
   const url = localStorage.getItem('ponte_sheets_url');
   if (!url) return;
   try {
-    await fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo, dado })
-    });
+    const params = new URLSearchParams();
+    params.append('tipo', tipo);
+    params.append('dado', JSON.stringify(dado));
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    const form = iframe.contentDocument.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    const input = iframe.contentDocument.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify({ tipo, dado });
+    form.appendChild(input);
+    iframe.contentDocument.body.appendChild(form);
+    form.submit();
+    setTimeout(() => document.body.removeChild(iframe), 5000);
   } catch (e) {
-    console.log('Sheets offline:', e);
+    console.log('Sheets erro:', e);
   }
 }
 
