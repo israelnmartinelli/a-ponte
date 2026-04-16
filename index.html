@@ -552,7 +552,8 @@
       <label>Link do Google Apps Script (Web App URL)</label>
       <input type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/..." value="">
     </div>
-    <button class="btn btn-verde" onclick="salvarConfig()">Salvar Configuração</button>
+    <button class="btn btn-verde" onclick="salvarConfig()" style="margin-bottom:10px">Salvar Configuração</button>
+    <button class="btn btn-cinza" onclick="sincronizarTudo()">🔄 Sincronizar Tudo com Sheets Agora</button>
     <div id="status-conexao" style="margin-top:10px; font-size:13px; color: var(--texto-claro);"></div>
   </div>
 
@@ -990,32 +991,40 @@ function limparDados() {
 }
 
 // ============================
-// GOOGLE SHEETS (opcional)
+// GOOGLE SHEETS (JSONP)
 // ============================
+function sheetsCallback(resp) {
+  console.log('Sheets OK:', resp);
+}
+
 function enviarParaSheets(tipo, dado) {
   const url = localStorage.getItem('ponte_sheets_url');
   if (!url) return;
   try {
-    const params = new URLSearchParams();
-    params.append('tipo', tipo);
-    params.append('dado', JSON.stringify(dado));
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    const form = iframe.contentDocument.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    const input = iframe.contentDocument.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify({ tipo, dado });
-    form.appendChild(input);
-    iframe.contentDocument.body.appendChild(form);
-    form.submit();
-    setTimeout(() => document.body.removeChild(iframe), 5000);
+    const payload = encodeURIComponent(JSON.stringify({ tipo, dado }));
+    const script = document.createElement('script');
+    script.src = url + '?callback=sheetsCallback&payload=' + payload;
+    document.body.appendChild(script);
+    setTimeout(() => { try { document.body.removeChild(script); } catch(e){} }, 10000);
   } catch (e) {
     console.log('Sheets erro:', e);
   }
+}
+
+// Sincronizar TODOS os dados locais para o Sheets de uma vez
+function sincronizarTudo() {
+  const url = localStorage.getItem('ponte_sheets_url');
+  if (!url) { mostrarToast('⚠️ Configure o link do Sheets primeiro!'); return; }
+  mostrarToast('🔄 Sincronizando...');
+  dados.pessoas.forEach((p, i) => setTimeout(() => enviarParaSheets('pessoa', p), i * 800));
+  const offset = dados.pessoas.length * 800;
+  dados.encontros.forEach((e, i) => setTimeout(() => enviarParaSheets('encontro', e), offset + i * 800));
+  const offset2 = offset + dados.encontros.length * 800;
+  Object.entries(dados.presencas).forEach(([eid, pids], i) => {
+    setTimeout(() => enviarParaSheets('presenca', { encontroId: eid, pessoas: pids }), offset2 + i * 800);
+  });
+  const total = offset2 + Object.keys(dados.presencas).length * 800;
+  setTimeout(() => mostrarToast('✅ Sincronização concluída!'), total + 500);
 }
 
 // ============================
