@@ -993,19 +993,25 @@ function limparDados() {
 // ============================
 // GOOGLE SHEETS (JSONP)
 // ============================
-function sheetsCallback(resp) {
-  console.log('Sheets OK:', resp);
-}
-
 function enviarParaSheets(tipo, dado) {
   const url = localStorage.getItem('ponte_sheets_url');
   if (!url) return;
   try {
     const payload = encodeURIComponent(JSON.stringify({ tipo, dado }));
+    const id = 'sc_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    window[id] = function(resp) {
+      console.log('Sheets OK:', resp);
+      try { document.getElementById(id).remove(); } catch(e) {}
+      delete window[id];
+    };
     const script = document.createElement('script');
-    script.src = url + '?callback=sheetsCallback&payload=' + payload;
-    document.body.appendChild(script);
-    setTimeout(() => { try { document.body.removeChild(script); } catch(e){} }, 10000);
+    script.id = id;
+    script.src = url + '?callback=' + id + '&payload=' + payload;
+    document.head.appendChild(script);
+    setTimeout(() => {
+      try { script.remove(); } catch(e) {}
+      delete window[id];
+    }, 15000);
   } catch (e) {
     console.log('Sheets erro:', e);
   }
