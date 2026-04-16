@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GR São Luiz - A Ponte</title>
+<style>
+  :root {
+    --verde: #1D9E75;
+    --verde-claro: #E1F5EE;
+    --verde-escuro: #0F6E56;
+    --cinza: #5F5E5A;
+    --cinza-claro: #F1EFE8;
+    --borda: #D3D1C7;
+    --branco: #ffffff;
+    --texto: #2C2C2A;
+    --texto-claro: #888780;
+    --perigo: #E24B4A;
+    --info: #185FA5;
+    --laranja: #BA7517;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f0;
+    color: var(--texto);
+    font-size: 15px;
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--verde-escuro);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header h1 { font-size: 17px; font-weight: 600; }
+  .header p { font-size: 12px; opacity: 0.8; }
+
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid var(--borda);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--texto-claro);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab.ativo {
+    color: var(--verde);
+    border-bottom-color: var(--verde);
+    font-weight: 600;
+  }
+  .tab-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+
+  .tela { display: none; padding: 16px; max-width: 700px; margin: 0 auto; }
+  .tela.ativa { display: block; }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-titulo {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--verde-escuro);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .campo { margin-bottom: 14px; }
+  .campo label {
+    display: block;
+    font-size: 13px;
+    color: var(--cinza);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .campo input, .campo select, .campo textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--borda);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--texto);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .campo input:focus, .campo select:focus, .campo textarea:focus {
+    border-color: var(--verde);
+  }
+  .campo textarea { resize: vertical; min-height: 80px; }
+  .campo select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .btn-verde { background: var(--verde); color: white; }
+  .btn-verde:active { background: var(--verde-escuro); transform: scale(0.98); }
+  .btn-cinza { background: var(--cinza-claro); color: var(--cinza); }
+  .btn-perigo { background: #FCEBEB; color: var(--perigo); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-verde { background: var(--verde-claro); color: var(--verde-escuro); }
+  .badge-laranja { background: #FAEEDA; color: var(--laranja); }
+  .badge-info { background: #E6F1FB; color: var(--info); }
+
+  .lista-item {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--borda);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--verde-claro);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: var(--verde-escuro);
+    flex-shrink: 0;
+  }
+  .lista-item-info { flex: 1; min-width: 0; }
+  .lista-item-nome { font-weight: 600; font-size: 15px; }
+  .lista-item-sub { font-size: 13px; color: var(--texto-claro); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-numero { font-size: 32px; font-weight: 700; color: var(--verde); }
+  .stat-label { font-size: 12px; color: var(--texto-claro); margin-top: 4px; }
+
+  .encontro-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .encontro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .encontro-nome { font-weight: 700; font-size: 16px; }
+  .encontro-data { font-size: 13px; color: var(--texto-claro); margin-top: 2px; }
+  .encontro-comentario { font-size: 13px; color: var(--cinza); margin-top: 8px; font-style: italic; }
+
+  .presenca-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cinza-claro);
+    gap: 12px;
+  }
+  .presenca-item:last-child { border-bottom: none; }
+  .presenca-check {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--borda);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .presenca-check.marcado { background: var(--verde); border-color: var(--verde); color: white; }
+
+  .alerta {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .alerta-verde { background: var(--verde-claro); color: var(--verde-escuro); }
+  .alerta-laranja { background: #FAEEDA; color: var(--laranja); }
+
+  .vazio {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--texto-claro);
+  }
+  .vazio-icon { font-size: 48px; margin-bottom: 12px; }
+  .vazio-texto { font-size: 15px; }
+
+  .config-info {
+    background: #E6F1FB;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .config-info-titulo { font-weight: 700; color: var(--info); margin-bottom: 6px; font-size: 14px; }
+  .config-info-texto { font-size: 13px; color: #0C447C; line-height: 1.6; }
+
+  .separador { height: 1px; background: var(--borda); margin: 16px 0; }
+
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--texto);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 1000;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .busca {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .busca input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border: 1.5px solid var(--borda);
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+  }
+  .busca-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--texto-claro);
+    font-size: 16px;
+  }
+
+  .link-btn {
+    display: inline-block;
+    background: var(--verde-claro);
+    color: var(--verde-escuro);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    margin-top: 8px;
+  }
+
+  @media (min-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">⛪</div>
+  <div>
+    <h1>GR São Luiz - A Ponte</h1>
+    <p>Controle de Presença</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab ativo" onclick="mudarTela('inicio')">
+    <span class="tab-icon">🏠</span>Início
+  </div>
+  <div class="tab" onclick="mudarTela('pessoas')">
+    <span class="tab-icon">👥</span>Pessoas
+  </div>
+  <div class="tab" onclick="mudarTela('encontros')">
+    <span class="tab-icon">📖</span>Encontros
+  </div>
+  <div class="tab" onclick="mudarTela('presenca')">
+    <span class="tab-icon">✅</span>Presença
+  </div>
+  <div class="tab" onclick="mudarTela('indicadores')">
+    <span class="tab-icon">📊</span>Dados
+  </div>
+  <div class="tab" onclick="mudarTela('config')">
+    <span class="tab-icon">⚙️</span>Config
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- INÍCIO -->
+<div class="tela ativa" id="tela-inicio">
+  <div class="alerta-verde alerta" id="alerta-config" style="display:none">
+    ⚙️ Configure o Google Sheets na aba <strong>Config</strong> para salvar os dados!
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-numero" id="stat-total-pessoas">0</div>
+      <div class="stat-label">Pessoas cadastradas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="stat-membros">0</div>
+      <div class="stat-label">Membros</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="stat-visitantes">0</div>
+      <div class="stat-label">Visitantes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="stat-encontros">0</div>
+      <div class="stat-label">Encontros</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">🗓️ Próximo / Último Encontro</div>
+    <div id="ultimo-encontro-info">
+      <div class="vazio">
+        <div class="vazio-icon">📖</div>
+        <div class="vazio-texto">Nenhum encontro cadastrado ainda</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">⚡ Ações Rápidas</div>
+    <button class="btn btn-verde" style="margin-bottom:10px" onclick="mudarTela('presenca')">✅ Registrar Presença Agora</button>
+    <button class="btn btn-cinza" style="margin-bottom:10px" onclick="mudarTela('pessoas')">➕ Cadastrar Nova Pessoa</button>
+    <button class="btn btn-cinza" onclick="mudarTela('encontros')">📅 Novo Encontro</button>
+  </div>
+</div>
+
+<!-- PESSOAS -->
+<div class="tela" id="tela-pessoas">
+  <div class="card">
+    <div class="card-titulo">➕ Nova Pessoa</div>
+    <div class="campo">
+      <label>Nome Completo *</label>
+      <input type="text" id="p-nome" placeholder="Ex: Maria Silva" autocomplete="off">
+    </div>
+    <div class="campo">
+      <label>Data de Nascimento</label>
+      <input type="date" id="p-nascimento">
+    </div>
+    <div class="campo">
+      <label>E-mail</label>
+      <input type="email" id="p-email" placeholder="email@exemplo.com">
+    </div>
+    <div class="campo">
+      <label>Telefone / WhatsApp</label>
+      <input type="tel" id="p-telefone" placeholder="(11) 99999-9999">
+    </div>
+    <div class="campo">
+      <label>Tipo</label>
+      <select id="p-tipo">
+        <option value="Membro">Membro</option>
+        <option value="Visitante">Visitante</option>
+      </select>
+    </div>
+    <button class="btn btn-verde" onclick="salvarPessoa()">Salvar Pessoa</button>
+  </div>
+
+  <div class="separador"></div>
+  <div class="card-titulo" style="padding: 0 4px 8px">👥 Pessoas Cadastradas</div>
+
+  <div class="busca">
+    <span class="busca-icon">🔍</span>
+    <input type="text" placeholder="Buscar por nome..." oninput="filtrarPessoas(this.value)" id="busca-pessoa">
+  </div>
+
+  <div id="lista-pessoas">
+    <div class="vazio">
+      <div class="vazio-icon">👥</div>
+      <div class="vazio-texto">Nenhuma pessoa cadastrada ainda</div>
+    </div>
+  </div>
+</div>
+
+<!-- ENCONTROS -->
+<div class="tela" id="tela-encontros">
+  <div class="card">
+    <div class="card-titulo">📅 Novo Encontro</div>
+    <div class="campo">
+      <label>Nome / Tema do Encontro *</label>
+      <input type="text" id="e-nome" placeholder="Ex: Encontro #12 - Fé e Esperança">
+    </div>
+    <div class="campo">
+      <label>Data *</label>
+      <input type="date" id="e-data">
+    </div>
+    <div class="campo">
+      <label>Comentário / Observações</label>
+      <textarea id="e-comentario" placeholder="Ex: Estudamos o livro de Romanos, capítulo 8..."></textarea>
+    </div>
+    <button class="btn btn-verde" onclick="salvarEncontro()">Salvar Encontro</button>
+  </div>
+
+  <div class="separador"></div>
+  <div class="card-titulo" style="padding: 0 4px 8px">📚 Encontros Cadastrados</div>
+
+  <div id="lista-encontros">
+    <div class="vazio">
+      <div class="vazio-icon">📖</div>
+      <div class="vazio-texto">Nenhum encontro cadastrado ainda</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRESENÇA -->
+<div class="tela" id="tela-presenca">
+  <div class="card">
+    <div class="card-titulo">✅ Registrar Presença</div>
+    <div class="campo">
+      <label>Selecione o Encontro</label>
+      <select id="sel-encontro" onchange="carregarPresenca()">
+        <option value="">-- Escolha um encontro --</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="area-presenca" style="display:none">
+    <div class="alerta alerta-verde" id="msg-presenca"></div>
+    <div class="card">
+      <div class="card-titulo">👥 Marque quem está presente</div>
+      <div id="lista-presenca"></div>
+    </div>
+    <button class="btn btn-verde" onclick="salvarPresenca()">💾 Salvar Presenças</button>
+  </div>
+
+  <div id="sem-encontro">
+    <div class="vazio">
+      <div class="vazio-icon">📋</div>
+      <div class="vazio-texto">Selecione um encontro acima para marcar a presença</div>
+    </div>
+  </div>
+</div>
+
+<!-- INDICADORES -->
+<div class="tela" id="tela-indicadores">
+  <div class="card-titulo" style="padding: 0 4px 12px">📊 Indicadores e Relatórios</div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-numero" id="ind-total">0</div>
+      <div class="stat-label">Total de pessoas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="ind-membros">0</div>
+      <div class="stat-label">Membros</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="ind-visitantes">0</div>
+      <div class="stat-label">Visitantes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-numero" id="ind-encontros">0</div>
+      <div class="stat-label">Encontros</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">🏆 Ranking de Presença</div>
+    <div id="ranking-presenca">
+      <div class="vazio-texto" style="color: var(--texto-claro); padding: 20px 0; text-align:center">Registre presenças para ver o ranking</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">📅 Presença por Encontro</div>
+    <div id="presenca-encontros">
+      <div class="vazio-texto" style="color: var(--texto-claro); padding: 20px 0; text-align:center">Nenhum dado ainda</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">📤 Exportar Dados</div>
+    <p style="font-size:13px; color: var(--texto-claro); margin-bottom:12px">Exporte os dados para uma planilha CSV que pode ser aberta no Excel ou Google Sheets.</p>
+    <button class="btn btn-cinza" style="margin-bottom:8px" onclick="exportarCSV('pessoas')">📋 Exportar Lista de Pessoas</button>
+    <button class="btn btn-cinza" onclick="exportarCSV('presencas')">✅ Exportar Presenças</button>
+  </div>
+</div>
+
+<!-- CONFIG -->
+<div class="tela" id="tela-config">
+  <div class="config-info">
+    <div class="config-info-titulo">ℹ️ Como funciona?</div>
+    <div class="config-info-texto">
+      Este app salva os dados no seu dispositivo (funciona sem internet). 
+      Para salvar também no Google Sheets, siga as instruções abaixo e cole o link do seu Script aqui.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">⚙️ Conexão Google Sheets</div>
+    <div class="campo">
+      <label>Link do Google Apps Script (Web App URL)</label>
+      <input type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/..." value="">
+    </div>
+    <button class="btn btn-verde" onclick="salvarConfig()">Salvar Configuração</button>
+    <div id="status-conexao" style="margin-top:10px; font-size:13px; color: var(--texto-claro);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">🗑️ Gerenciar Dados Locais</div>
+    <p style="font-size:13px; color: var(--texto-claro); margin-bottom:12px">
+      Os dados ficam salvos neste dispositivo. Use o botão abaixo apenas se quiser apagar tudo e recomeçar.
+    </p>
+    <button class="btn btn-perigo" onclick="limparDados()">⚠️ Apagar Todos os Dados</button>
+  </div>
+
+  <div class="card">
+    <div class="card-titulo">📱 Sobre o App</div>
+    <p style="font-size:13px; color: var(--texto-claro); line-height:1.7">
+      <strong>GR São Luiz - A Ponte</strong><br>
+      Versão 1.0 — Desenvolvido com carinho<br><br>
+      Para adicionar à tela inicial do iPad: toque em <strong>Compartilhar</strong> (ícone de seta) → <strong>"Adicionar à Tela de Início"</strong>
+    </p>
+  </div>
+</div>
+
+<script>
+// ============================
+// DADOS (localStorage)
+// ============================
+let dados = {
+  pessoas: [],
+  encontros: [],
+  presencas: {} // { encontroId: [pessoaId, ...] }
+};
+
+function carregarDados() {
+  const salvo = localStorage.getItem('ponte_dados');
+  if (salvo) dados = JSON.parse(salvo);
+}
+
+function salvarDados() {
+  localStorage.setItem('ponte_dados', JSON.stringify(dados));
+}
+
+function gerarId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+// ============================
+// NAVEGAÇÃO
+// ============================
+function mudarTela(nome) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+  document.getElementById('tela-' + nome).classList.add('ativa');
+  const tabs = ['inicio', 'pessoas', 'encontros', 'presenca', 'indicadores', 'config'];
+  const idx = tabs.indexOf(nome);
+  document.querySelectorAll('.tab')[idx].classList.add('ativo');
+
+  if (nome === 'inicio') atualizarInicio();
+  if (nome === 'pessoas') renderizarPessoas();
+  if (nome === 'encontros') renderizarEncontros();
+  if (nome === 'presenca') carregarSeletorEncontros();
+  if (nome === 'indicadores') atualizarIndicadores();
+}
+
+// ============================
+// TOAST
+// ============================
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visivel');
+  setTimeout(() => t.classList.remove('visivel'), 2500);
+}
+
+// ============================
+// PESSOAS
+// ============================
+function salvarPessoa() {
+  const nome = document.getElementById('p-nome').value.trim();
+  if (!nome) { mostrarToast('⚠️ Informe o nome da pessoa!'); return; }
+
+  const pessoa = {
+    id: gerarId(),
+    nome,
+    nascimento: document.getElementById('p-nascimento').value,
+    email: document.getElementById('p-email').value.trim(),
+    telefone: document.getElementById('p-telefone').value.trim(),
+    tipo: document.getElementById('p-tipo').value,
+    criadoEm: new Date().toISOString()
+  };
+
+  dados.pessoas.push(pessoa);
+  salvarDados();
+  enviarParaSheets('pessoa', pessoa);
+
+  document.getElementById('p-nome').value = '';
+  document.getElementById('p-nascimento').value = '';
+  document.getElementById('p-email').value = '';
+  document.getElementById('p-telefone').value = '';
+  document.getElementById('p-tipo').value = 'Membro';
+
+  mostrarToast('✅ ' + nome + ' cadastrado(a)!');
+  renderizarPessoas();
+}
+
+function iniciais(nome) {
+  const partes = nome.trim().split(' ');
+  if (partes.length === 1) return partes[0][0].toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+}
+
+function renderizarPessoas(filtro = '') {
+  const lista = document.getElementById('lista-pessoas');
+  const pessoas = dados.pessoas.filter(p =>
+    p.nome.toLowerCase().includes(filtro.toLowerCase())
+  );
+
+  if (pessoas.length === 0) {
+    lista.innerHTML = `<div class="vazio"><div class="vazio-icon">👥</div><div class="vazio-texto">${filtro ? 'Nenhum resultado encontrado' : 'Nenhuma pessoa cadastrada ainda'}</div></div>`;
+    return;
+  }
+
+  lista.innerHTML = pessoas.map(p => `
+    <div class="lista-item">
+      <div class="avatar">${iniciais(p.nome)}</div>
+      <div class="lista-item-info">
+        <div class="lista-item-nome">${p.nome}</div>
+        <div class="lista-item-sub">${p.telefone || p.email || '—'}</div>
+      </div>
+      <span class="badge ${p.tipo === 'Membro' ? 'badge-verde' : 'badge-laranja'}">${p.tipo}</span>
+      <button onclick="removerPessoa('${p.id}')" style="background:none;border:none;font-size:18px;cursor:pointer;color:#ccc;padding:4px">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function filtrarPessoas(v) { renderizarPessoas(v); }
+
+function removerPessoa(id) {
+  if (!confirm('Remover esta pessoa? Esta ação não pode ser desfeita.')) return;
+  dados.pessoas = dados.pessoas.filter(p => p.id !== id);
+  salvarDados();
+  renderizarPessoas(document.getElementById('busca-pessoa').value);
+  mostrarToast('🗑️ Pessoa removida');
+}
+
+// ============================
+// ENCONTROS
+// ============================
+function salvarEncontro() {
+  const nome = document.getElementById('e-nome').value.trim();
+  const data = document.getElementById('e-data').value;
+  if (!nome || !data) { mostrarToast('⚠️ Preencha o nome e a data!'); return; }
+
+  const encontro = {
+    id: gerarId(),
+    nome,
+    data,
+    comentario: document.getElementById('e-comentario').value.trim(),
+    criadoEm: new Date().toISOString()
+  };
+
+  dados.encontros.push(encontro);
+  dados.encontros.sort((a, b) => b.data.localeCompare(a.data));
+  salvarDados();
+  enviarParaSheets('encontro', encontro);
+
+  document.getElementById('e-nome').value = '';
+  document.getElementById('e-data').value = '';
+  document.getElementById('e-comentario').value = '';
+
+  mostrarToast('✅ Encontro salvo!');
+  renderizarEncontros();
+}
+
+function formatarData(dataStr) {
+  if (!dataStr) return '';
+  const [y, m, d] = dataStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function renderizarEncontros() {
+  const lista = document.getElementById('lista-encontros');
+  if (dados.encontros.length === 0) {
+    lista.innerHTML = `<div class="vazio"><div class="vazio-icon">📖</div><div class="vazio-texto">Nenhum encontro cadastrado ainda</div></div>`;
+    return;
+  }
+
+  lista.innerHTML = dados.encontros.map(e => {
+    const presentes = (dados.presencas[e.id] || []).length;
+    return `
+    <div class="encontro-card">
+      <div class="encontro-header">
+        <div>
+          <div class="encontro-nome">${e.nome}</div>
+          <div class="encontro-data">📅 ${formatarData(e.data)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="badge badge-info">👥 ${presentes} presente${presentes !== 1 ? 's' : ''}</span>
+          <button onclick="removerEncontro('${e.id}')" style="background:none;border:none;font-size:14px;cursor:pointer;color:#ccc">🗑️</button>
+        </div>
+      </div>
+      ${e.comentario ? `<div class="encontro-comentario">"${e.comentario}"</div>` : ''}
+    </div>
+  `}).join('');
+}
+
+function removerEncontro(id) {
+  if (!confirm('Remover este encontro? As presenças associadas também serão removidas.')) return;
+  dados.encontros = dados.encontros.filter(e => e.id !== id);
+  delete dados.presencas[id];
+  salvarDados();
+  renderizarEncontros();
+  mostrarToast('🗑️ Encontro removido');
+}
+
+// ============================
+// PRESENÇA
+// ============================
+let presencaAtual = {};
+
+function carregarSeletorEncontros() {
+  const sel = document.getElementById('sel-encontro');
+  sel.innerHTML = '<option value="">-- Escolha um encontro --</option>';
+  dados.encontros.forEach(e => {
+    sel.innerHTML += `<option value="${e.id}">${e.nome} (${formatarData(e.data)})</option>`;
+  });
+  document.getElementById('area-presenca').style.display = 'none';
+  document.getElementById('sem-encontro').style.display = 'block';
+}
+
+function carregarPresenca() {
+  const id = document.getElementById('sel-encontro').value;
+  if (!id) {
+    document.getElementById('area-presenca').style.display = 'none';
+    document.getElementById('sem-encontro').style.display = 'block';
+    return;
+  }
+
+  presencaAtual = {};
+  const marcados = dados.presencas[id] || [];
+  marcados.forEach(pid => presencaAtual[pid] = true);
+
+  const encontro = dados.encontros.find(e => e.id === id);
+  document.getElementById('msg-presenca').textContent =
+    `📖 ${encontro.nome} — ${formatarData(encontro.data)}`;
+
+  const lista = document.getElementById('lista-presenca');
+  if (dados.pessoas.length === 0) {
+    lista.innerHTML = `<p style="color:var(--texto-claro);font-size:14px;padding:16px 0;text-align:center">Cadastre pessoas primeiro na aba Pessoas</p>`;
+  } else {
+    lista.innerHTML = dados.pessoas.map(p => `
+      <div class="presenca-item" onclick="togglePresenca('${p.id}', this)">
+        <div class="presenca-check ${presencaAtual[p.id] ? 'marcado' : ''}" id="check-${p.id}">
+          ${presencaAtual[p.id] ? '✓' : ''}
+        </div>
+        <div class="avatar" style="width:34px;height:34px;font-size:12px">${iniciais(p.nome)}</div>
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:14px">${p.nome}</div>
+          <span class="badge ${p.tipo === 'Membro' ? 'badge-verde' : 'badge-laranja'}" style="font-size:11px">${p.tipo}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('area-presenca').style.display = 'block';
+  document.getElementById('sem-encontro').style.display = 'none';
+}
+
+function togglePresenca(pessoaId, linha) {
+  presencaAtual[pessoaId] = !presencaAtual[pessoaId];
+  const check = document.getElementById('check-' + pessoaId);
+  if (presencaAtual[pessoaId]) {
+    check.classList.add('marcado');
+    check.textContent = '✓';
+  } else {
+    check.classList.remove('marcado');
+    check.textContent = '';
+  }
+}
+
+function salvarPresenca() {
+  const id = document.getElementById('sel-encontro').value;
+  if (!id) return;
+  dados.presencas[id] = Object.keys(presencaAtual).filter(k => presencaAtual[k]);
+  salvarDados();
+
+  const total = dados.presencas[id].length;
+  enviarParaSheets('presenca', { encontroId: id, pessoas: dados.presencas[id] });
+  mostrarToast(`✅ ${total} presença${total !== 1 ? 's' : ''} salva${total !== 1 ? 's' : ''}!`);
+}
+
+// ============================
+// INÍCIO
+// ============================
+function atualizarInicio() {
+  const membros = dados.pessoas.filter(p => p.tipo === 'Membro').length;
+  const visitantes = dados.pessoas.filter(p => p.tipo === 'Visitante').length;
+  document.getElementById('stat-total-pessoas').textContent = dados.pessoas.length;
+  document.getElementById('stat-membros').textContent = membros;
+  document.getElementById('stat-visitantes').textContent = visitantes;
+  document.getElementById('stat-encontros').textContent = dados.encontros.length;
+
+  const el = document.getElementById('ultimo-encontro-info');
+  const url = localStorage.getItem('ponte_sheets_url');
+  document.getElementById('alerta-config').style.display = url ? 'none' : 'block';
+
+  if (dados.encontros.length > 0) {
+    const e = dados.encontros[0];
+    const presentes = (dados.presencas[e.id] || []).length;
+    el.innerHTML = `
+      <div style="font-weight:700;font-size:17px;margin-bottom:4px">${e.nome}</div>
+      <div style="color:var(--texto-claro);font-size:14px;margin-bottom:10px">📅 ${formatarData(e.data)}</div>
+      <span class="badge badge-info">👥 ${presentes} presente${presentes !== 1 ? 's' : ''}</span>
+      ${e.comentario ? `<p style="margin-top:10px;font-size:13px;color:var(--cinza);font-style:italic">"${e.comentario}"</p>` : ''}
+    `;
+  } else {
+    el.innerHTML = `<div class="vazio"><div class="vazio-icon">📖</div><div class="vazio-texto">Nenhum encontro cadastrado ainda</div></div>`;
+  }
+}
+
+// ============================
+// INDICADORES
+// ============================
+function atualizarIndicadores() {
+  const membros = dados.pessoas.filter(p => p.tipo === 'Membro').length;
+  const visitantes = dados.pessoas.filter(p => p.tipo === 'Visitante').length;
+  document.getElementById('ind-total').textContent = dados.pessoas.length;
+  document.getElementById('ind-membros').textContent = membros;
+  document.getElementById('ind-visitantes').textContent = visitantes;
+  document.getElementById('ind-encontros').textContent = dados.encontros.length;
+
+  // Ranking
+  const contagem = {};
+  dados.pessoas.forEach(p => contagem[p.id] = 0);
+  Object.values(dados.presencas).forEach(lista => {
+    lista.forEach(pid => { if (contagem[pid] !== undefined) contagem[pid]++; });
+  });
+
+  const ranking = dados.pessoas
+    .map(p => ({ ...p, presencas: contagem[p.id] || 0 }))
+    .sort((a, b) => b.presencas - a.presencas)
+    .slice(0, 10);
+
+  const elRanking = document.getElementById('ranking-presenca');
+  if (ranking.length === 0 || ranking.every(r => r.presencas === 0)) {
+    elRanking.innerHTML = `<div style="color:var(--texto-claro);padding:16px 0;text-align:center;font-size:13px">Registre presenças para ver o ranking</div>`;
+  } else {
+    elRanking.innerHTML = ranking.map((p, i) => `
+      <div class="presenca-item">
+        <div style="font-weight:700;color:var(--texto-claro);font-size:14px;width:24px">${i + 1}.</div>
+        <div class="avatar" style="width:34px;height:34px;font-size:12px">${iniciais(p.nome)}</div>
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:14px">${p.nome}</div>
+          <span class="badge ${p.tipo === 'Membro' ? 'badge-verde' : 'badge-laranja'}" style="font-size:11px">${p.tipo}</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:700;color:var(--verde);font-size:18px">${p.presencas}</div>
+          <div style="font-size:11px;color:var(--texto-claro)">encontros</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Presença por encontro
+  const elEncontros = document.getElementById('presenca-encontros');
+  if (dados.encontros.length === 0) {
+    elEncontros.innerHTML = `<div style="color:var(--texto-claro);padding:16px 0;text-align:center;font-size:13px">Nenhum encontro ainda</div>`;
+  } else {
+    elEncontros.innerHTML = dados.encontros.map(e => {
+      const presentes = (dados.presencas[e.id] || []).length;
+      const pct = dados.pessoas.length > 0 ? Math.round((presentes / dados.pessoas.length) * 100) : 0;
+      return `
+        <div style="padding:10px 0;border-bottom:1px solid var(--cinza-claro)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:13px;font-weight:500">${e.nome}</span>
+            <span style="font-size:13px;color:var(--verde);font-weight:700">${presentes} pessoas</span>
+          </div>
+          <div style="background:var(--cinza-claro);border-radius:4px;height:6px;overflow:hidden">
+            <div style="background:var(--verde);width:${pct}%;height:100%;border-radius:4px;transition:width 0.5s"></div>
+          </div>
+          <div style="font-size:11px;color:var(--texto-claro);margin-top:3px">${formatarData(e.data)} · ${pct}% de presença</div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+// ============================
+// EXPORTAR CSV
+// ============================
+function exportarCSV(tipo) {
+  let csv = '';
+  let nomeArquivo = '';
+
+  if (tipo === 'pessoas') {
+    csv = 'Nome,Nascimento,Email,Telefone,Tipo\n';
+    dados.pessoas.forEach(p => {
+      csv += `"${p.nome}","${formatarData(p.nascimento)}","${p.email}","${p.telefone}","${p.tipo}"\n`;
+    });
+    nomeArquivo = 'pessoas_ponte.csv';
+  } else {
+    csv = 'Encontro,Data,Pessoa,Tipo\n';
+    dados.encontros.forEach(e => {
+      const ids = dados.presencas[e.id] || [];
+      ids.forEach(pid => {
+        const p = dados.pessoas.find(x => x.id === pid);
+        if (p) csv += `"${e.nome}","${formatarData(e.data)}","${p.nome}","${p.tipo}"\n`;
+      });
+    });
+    nomeArquivo = 'presencas_ponte.csv';
+  }
+
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nomeArquivo;
+  a.click();
+  mostrarToast('📥 Arquivo baixado!');
+}
+
+// ============================
+// CONFIG
+// ============================
+function salvarConfig() {
+  const url = document.getElementById('sheets-url').value.trim();
+  localStorage.setItem('ponte_sheets_url', url);
+  document.getElementById('status-conexao').textContent = url ? '✅ URL salva com sucesso!' : '⚠️ URL removida';
+  mostrarToast('Configuração salva!');
+}
+
+function limparDados() {
+  if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODAS as pessoas, encontros e presenças.\n\nTem certeza absoluta?')) return;
+  dados = { pessoas: [], encontros: [], presencas: {} };
+  salvarDados();
+  mostrarToast('🗑️ Dados apagados');
+  atualizarInicio();
+}
+
+// ============================
+// GOOGLE SHEETS (opcional)
+// ============================
+async function enviarParaSheets(tipo, dado) {
+  const url = localStorage.getItem('ponte_sheets_url');
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, dado })
+    });
+  } catch (e) {
+    console.log('Sheets offline:', e);
+  }
+}
+
+// ============================
+// INICIALIZAÇÃO
+// ============================
+window.onload = () => {
+  carregarDados();
+  const url = localStorage.getItem('ponte_sheets_url') || '';
+  document.getElementById('sheets-url').value = url;
+  // Preencher data de hoje
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('e-data').value = hoje;
+  atualizarInicio();
+};
+</script>
+</body>
+</html>
